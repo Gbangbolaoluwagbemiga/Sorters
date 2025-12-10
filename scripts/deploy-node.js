@@ -10,7 +10,7 @@ const path = require('path');
 const { makeContractDeploy, broadcastTransaction, AnchorMode, getAddressFromPrivateKey } = require('@stacks/transactions');
 const { StacksMainnet, StacksTestnet } = require('@stacks/network');
 const bip39 = require('bip39');
-const { derivePrivateKey } = require('@stacks/bip32');
+const bip32 = require('bip32');
 require('dotenv').config();
 
 async function deploy() {
@@ -52,28 +52,25 @@ async function deploy() {
     // It's a mnemonic - derive the private key
     console.log('📝 Detected mnemonic, deriving private key...');
     try {
-      const wallet = await restoreWalletAccounts({
-        mnemonic: privateKey,
-        password: '',
-      });
-      if (!wallet || !wallet.accounts || wallet.accounts.length === 0) {
-        throw new Error('Failed to restore wallet from mnemonic');
+      // Validate mnemonic
+      if (!bip39.validateMnemonic(privateKey)) {
+        throw new Error('Invalid mnemonic phrase');
       }
-      const account = wallet.accounts[0];
-      privateKey = account.stxPrivateKey;
-      address = account.address;
+      
+      // Derive seed from mnemonic
+      const seed = await bip39.mnemonicToSeed(privateKey);
+      
+      // Derive private key using Stacks derivation path: m/44'/5757'/0'/0/0
+      const root = bip32.fromSeed(seed);
+      const child = root.derivePath("m/44'/5757'/0'/0/0");
+      privateKey = child.privateKey.toString('hex');
+      
+      // Get address from private key
+      address = getAddressFromPrivateKey(privateKey, stacksNetwork.version);
+      console.log('✅ Successfully derived private key from mnemonic');
     } catch (error) {
       console.error('❌ Error deriving account from mnemonic:', error.message);
-      console.error('Trying alternative method...');
-      // Try using @stacks/encryption to derive key
-      try {
-        const { deriveStxPrivateKey } = require('@stacks/encryption');
-        privateKey = deriveStxPrivateKey({ mnemonic: privateKey, index: 0 });
-        address = getAddressFromPrivateKey(privateKey, stacksNetwork.version);
-      } catch (err2) {
-        console.error('❌ Alternative method also failed:', err2.message);
-        process.exit(1);
-      }
+      process.exit(1);
     }
   } else {
     // It's a hex private key
