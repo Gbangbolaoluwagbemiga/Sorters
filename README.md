@@ -94,16 +94,19 @@ npm run devnet
 
 # Deploy to testnet
 npm run deploy:testnet
+
+# Deploy to mainnet (⚠️ Permanent - test thoroughly first!)
+npm run deploy:mainnet
 ```
 
 ### Frontend Development
 
 ```bash
 # Start development server
-npm run dev
+cd frontend && npm run dev
 
 # Build for production
-npm run build
+cd frontend && npm run build
 ```
 
 ## 🧪 Testing
