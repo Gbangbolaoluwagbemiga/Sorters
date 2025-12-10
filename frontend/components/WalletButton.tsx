@@ -1,10 +1,29 @@
 'use client';
 
 import { useWallet } from '@/lib/wallet';
+import { useConnect } from '@stacks/connect-react';
+import { network } from '@/lib/wallet';
 import { Wallet, LogOut } from 'lucide-react';
 
 export function WalletButton() {
-  const { connectWallet, disconnectWallet, isAuthenticated, address } = useWallet();
+  const { disconnectWallet, isAuthenticated, address } = useWallet();
+  const { doOpenAuth } = useConnect();
+
+  const connectWallet = async () => {
+    await doOpenAuth({
+      network,
+      appDetails: {
+        name: 'Sorters',
+        icon: 'https://sorters.app/icon.png',
+      },
+      onFinish: () => {
+        window.location.reload();
+      },
+      onCancel: () => {
+        console.log('User cancelled authentication');
+      },
+    });
+  };
 
   if (isAuthenticated && address) {
     return (

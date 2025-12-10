@@ -7,23 +7,7 @@ import { NETWORK } from './config';
 export const network = NETWORK === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
 
 export function useWallet() {
-  const { doOpenAuth, doAuth, isAuthenticated, userData, isShowingAuth } = useConnect();
-
-  const connectWallet = async () => {
-    await doOpenAuth({
-      network,
-      appDetails: {
-        name: 'Sorters',
-        icon: 'https://sorters.app/icon.png',
-      },
-      onFinish: (data) => {
-        console.log('User authenticated:', data);
-      },
-      onCancel: () => {
-        console.log('User cancelled authentication');
-      },
-    });
-  };
+  const { isAuthenticated, userData } = useConnect();
 
   const disconnectWallet = () => {
     // Stacks Connect handles disconnection automatically
@@ -31,12 +15,10 @@ export function useWallet() {
   };
 
   return {
-    connectWallet,
     disconnectWallet,
-    isAuthenticated,
+    isAuthenticated: isAuthenticated || false,
     userData,
-    isShowingAuth,
-    address: userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet,
+    address: userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet || null,
   };
 }
 

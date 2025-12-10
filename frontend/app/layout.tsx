@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import { Connect } from '@stacks/connect-react';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { NETWORK } from '@/lib/config';
-import '@/styles/globals.css';
+import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
