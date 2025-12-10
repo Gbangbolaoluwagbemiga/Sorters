@@ -10,7 +10,9 @@ const path = require('path');
 const { makeContractDeploy, broadcastTransaction, AnchorMode, getAddressFromPrivateKey } = require('@stacks/transactions');
 const { StacksMainnet, StacksTestnet } = require('@stacks/network');
 const bip39 = require('bip39');
-const bip32 = require('bip32');
+const { BIP32Factory } = require('bip32');
+const ecc = require('tiny-secp256k1');
+const bip32 = BIP32Factory(ecc);
 require('dotenv').config();
 
 async function deploy() {
@@ -77,8 +79,11 @@ async function deploy() {
       }
       
       // Derive private key using Stacks derivation path: m/44'/5757'/0'/0/0
-      const root = bip32.fromSeed(seed);
+      const root = bip32.fromSeed(Buffer.from(seed));
       const child = root.derivePath("m/44'/5757'/0'/0/0");
+      if (!child.privateKey) {
+        throw new Error('Failed to derive private key from mnemonic');
+      }
       privateKey = child.privateKey.toString('hex');
       
       // Get address from private key
