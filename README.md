@@ -52,6 +52,7 @@ Sorters/
 
 - Node.js 18+ and npm
 - Stacks CLI (`npm install -g @stacks/cli`)
+- Clarinet (`cargo install clarinet`)
 - Hiro Wallet or Xverse wallet extension
 
 ### Installation
@@ -63,12 +64,38 @@ cd Sorters
 
 # Install dependencies
 npm install
+cd frontend && npm install && cd ..
 
-# Deploy contract to testnet
+# Test the contract
+npm test
+
+# Deploy contract to testnet (or mainnet)
 npm run deploy:testnet
+# OR for mainnet: npm run deploy:mainnet
+
+# Configure frontend environment
+cd frontend
+cp .env.example .env.local
+# Edit .env.local with your contract address
 
 # Start frontend
 npm run dev
+```
+
+### 🌐 Mainnet Deployment
+
+⚠️ **Important**: Mainnet deployment is permanent. Ensure you have:
+- ✅ All tests passing
+- ✅ Testnet deployment tested thoroughly
+- ✅ Sufficient STX for deployment fees (~1-2 STX)
+- ✅ Contract address saved for frontend configuration
+
+```bash
+# Deploy to mainnet
+npm run deploy:mainnet
+
+# Update frontend .env.local with mainnet contract address
+# Set NEXT_PUBLIC_STACKS_NETWORK=mainnet
 ```
 
 ## 📋 Smart Contract Features
