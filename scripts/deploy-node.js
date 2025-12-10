@@ -9,6 +9,8 @@ const fs = require('fs');
 const path = require('path');
 const { makeContractDeploy, broadcastTransaction, AnchorMode, getAddressFromPrivateKey } = require('@stacks/transactions');
 const { StacksMainnet, StacksTestnet } = require('@stacks/network');
+const bip39 = require('bip39');
+const { derivePrivateKey } = require('@stacks/bip32');
 require('dotenv').config();
 
 async function deploy() {
@@ -16,7 +18,7 @@ async function deploy() {
   console.log('==============================\n');
 
   // Load environment variables
-  const secretKey = process.env.STACKS_SECRET_KEY;
+  let secretKey = process.env.STACKS_SECRET_KEY;
   const network = process.env.STACKS_NETWORK || 'mainnet';
   const contractName = process.env.CONTRACT_NAME || 'sorters';
 
@@ -25,6 +27,13 @@ async function deploy() {
     process.exit(1);
   }
 
+  // Handle mnemonic - convert to private key if needed
+  let privateKey = secretKey;
+  let address;
+  
+  // Remove quotes if present
+  privateKey = privateKey.replace(/^["']|["']$/g, '').trim();
+  
   // Check if contract file exists
   const contractPath = path.join(__dirname, '..', 'contracts', `${contractName}.clar`);
   if (!fs.existsSync(contractPath)) {
@@ -38,8 +47,44 @@ async function deploy() {
   // Determine network
   const stacksNetwork = network === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
 
-  // Get address from private key
-  const address = getAddressFromPrivateKey(secretKey, stacksNetwork.version);
+  // Check if it's a mnemonic (contains spaces) or a hex private key
+  if (privateKey.split(' ').length > 1) {
+    // It's a mnemonic - derive the private key
+    console.log('📝 Detected mnemonic, deriving private key...');
+    try {
+      const wallet = await restoreWalletAccounts({
+        mnemonic: privateKey,
+        password: '',
+      });
+      if (!wallet || !wallet.accounts || wallet.accounts.length === 0) {
+        throw new Error('Failed to restore wallet from mnemonic');
+      }
+      const account = wallet.accounts[0];
+      privateKey = account.stxPrivateKey;
+      address = account.address;
+    } catch (error) {
+      console.error('❌ Error deriving account from mnemonic:', error.message);
+      console.error('Trying alternative method...');
+      // Try using @stacks/encryption to derive key
+      try {
+        const { deriveStxPrivateKey } = require('@stacks/encryption');
+        privateKey = deriveStxPrivateKey({ mnemonic: privateKey, index: 0 });
+        address = getAddressFromPrivateKey(privateKey, stacksNetwork.version);
+      } catch (err2) {
+        console.error('❌ Alternative method also failed:', err2.message);
+        process.exit(1);
+      }
+    }
+  } else {
+    // It's a hex private key
+    try {
+      address = getAddressFromPrivateKey(privateKey, stacksNetwork.version);
+    } catch (error) {
+      console.error('❌ Error getting address from private key:', error.message);
+      console.error('Make sure your STACKS_SECRET_KEY is either a valid mnemonic or hex private key');
+      process.exit(1);
+    }
+  }
   console.log(`Network: ${network}`);
   console.log(`Contract: ${contractName}`);
   console.log(`Deployer: ${address}\n`);
@@ -53,7 +98,7 @@ async function deploy() {
     const txOptions = {
       contractName,
       codeBody: contractCode,
-      senderKey: secretKey,
+      senderKey: privateKey,
       network: stacksNetwork,
       anchorMode: AnchorMode.Any,
       fee: 10000, // Fee in microstacks
