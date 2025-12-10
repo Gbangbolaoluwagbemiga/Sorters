@@ -69,7 +69,7 @@ async function deploy() {
         console.log('⚠️  Mnemonic validation warning (continuing anyway)...');
       }
       
-      // Derive seed from mnemonic
+      // Derive seed from mnemonic (returns Buffer)
       let seed;
       try {
         seed = await bip39.mnemonicToSeed(normalizedMnemonic);
@@ -78,13 +78,31 @@ async function deploy() {
         seed = await bip39.mnemonicToSeed(normalizedMnemonic.toLowerCase());
       }
       
+      // Ensure seed is a Buffer
+      if (!Buffer.isBuffer(seed)) {
+        seed = Buffer.from(seed);
+      }
+      
       // Derive private key using Stacks derivation path: m/44'/5757'/0'/0/0
-      const root = bip32.fromSeed(Buffer.from(seed));
+      const root = bip32.fromSeed(seed);
       const child = root.derivePath("m/44'/5757'/0'/0/0");
       if (!child.privateKey) {
         throw new Error('Failed to derive private key from mnemonic');
       }
-      privateKey = child.privateKey.toString('hex');
+      
+      // Extract the 32-byte private key (first 32 bytes)
+      // child.privateKey is a Buffer, we need the first 32 bytes
+      const privateKeyBuffer = Buffer.isBuffer(child.privateKey) 
+        ? child.privateKey.slice(0, 32) 
+        : Buffer.from(child.privateKey).slice(0, 32);
+      
+      // Convert to hex string (should be 64 characters)
+      privateKey = privateKeyBuffer.toString('hex');
+      
+      // Ensure it's exactly 64 hex characters (32 bytes)
+      if (privateKey.length !== 64) {
+        throw new Error(`Invalid private key length: ${privateKey.length} (expected 64)`);
+      }
       
       // Get address from private key
       address = getAddressFromPrivateKey(privateKey, stacksNetwork.version);
@@ -113,13 +131,15 @@ async function deploy() {
 
   try {
     // Create deployment transaction
+    // Fee calculation: deployment typically costs 0.001-0.01 STX (100000-1000000 microstacks)
+    // Using a higher fee to ensure transaction goes through
     const txOptions = {
       contractName,
       codeBody: contractCode,
       senderKey: privateKey,
       network: stacksNetwork,
       anchorMode: AnchorMode.Any,
-      fee: 10000, // Fee in microstacks
+      fee: 500000, // 0.5 STX fee in microstacks (higher fee for faster confirmation)
     };
 
     console.log('📦 Creating deployment transaction...');
