@@ -324,7 +324,7 @@
     (let ((note (map-get? notes note-id)))
         (match note
             note-data (ok (is-eq (get owner note-data) user))
-            (err false)
+            (ok false)
         )
     )
 )
