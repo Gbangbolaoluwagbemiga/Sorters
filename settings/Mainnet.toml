@@ -1,0 +1,8 @@
+[node]
+rpc_address = "https://api.hiro.so"
+network = "mainnet"
+
+[deployment]
+fee_rate = 1
+deployer = "REPLACE_WITH_YOUR_MAINNET_ADDRESS"
+
