@@ -19,13 +19,13 @@ async function deploy() {
   console.log('🚀 Sorters Contract Deployment');
   console.log('==============================\n');
 
-  // Load environment variables
-  let secretKey = process.env.STACKS_SECRET_KEY;
+  // Load environment variables (support both variable names)
+  let secretKey = process.env.STACKS_SECRET_KEY || process.env.DEPLOYER_MNEMONIC;
   const network = process.env.STACKS_NETWORK || 'mainnet';
   const contractName = process.env.CONTRACT_NAME || 'sorters';
 
   if (!secretKey) {
-    console.error('❌ Error: STACKS_SECRET_KEY not set in .env file');
+    console.error('❌ Error: STACKS_SECRET_KEY or DEPLOYER_MNEMONIC not set in .env file');
     process.exit(1);
   }
 

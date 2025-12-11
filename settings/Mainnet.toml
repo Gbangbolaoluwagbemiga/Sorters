@@ -6,3 +6,4 @@ network = "mainnet"
 fee_rate = 1
 deployer = "REPLACE_WITH_YOUR_MAINNET_ADDRESS"
 
+

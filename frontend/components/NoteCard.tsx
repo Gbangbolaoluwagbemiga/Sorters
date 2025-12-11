@@ -80,3 +80,4 @@ export function NoteCard({ note, onEdit, onDelete, isOwner }: NoteCardProps) {
   );
 }
 
+

@@ -172,3 +172,4 @@ export function NoteEditor({ initialNote, onSave, onCancel, isLoading }: NoteEdi
   );
 }
 
+

@@ -74,3 +74,4 @@ echo "   NEXT_PUBLIC_STACKS_NETWORK=mainnet"
 echo "   NEXT_PUBLIC_CONTRACT_ADDRESS=<your-address>"
 echo "3. Verify on: https://explorer.stacks.co/?chain=mainnet"
 
+

@@ -6,3 +6,4 @@ network = "testnet"
 fee_rate = 1
 deployer = "REPLACE_WITH_YOUR_TESTNET_ADDRESS"
 
+

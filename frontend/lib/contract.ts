@@ -201,3 +201,4 @@ export function deleteNoteArgs(noteId: number): ClarityValue[] {
   return [uintCV(noteId)];
 }
 
+

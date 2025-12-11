@@ -5,3 +5,4 @@ export const NETWORK = process.env.NEXT_PUBLIC_STACKS_NETWORK || 'testnet';
 export const APP_NAME = 'Sorters';
 export const APP_ICON = '📝';
 
+
