@@ -1,9 +1,9 @@
-[node]
-rpc_address = "https://api.hiro.so"
-network = "mainnet"
+[network]
+name = "mainnet"
+stacks_node_rpc_address = "https://api.hiro.so"
+deployment_fee_rate = 10
 
-[deployment]
-fee_rate = 1
-deployer = "REPLACE_WITH_YOUR_MAINNET_ADDRESS"
+[accounts.deployer]
+mnemonic = "ship protect endorse arrow because path meat immune quote drink fluid state mask burger divert upset arena body column all tray sing viable arctic"
 
 
