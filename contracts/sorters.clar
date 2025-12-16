@@ -1,6 +1,3 @@
-;; Sorters - Decentralized Note Keeper Smart Contract
-;; Built on Stacks Blockchain using Clarity
-
 ;; Error codes
 (define-constant ERR-NOT-AUTHORIZED (err u1001))
 (define-constant ERR-NOTE-NOT-FOUND (err u1002))
@@ -99,15 +96,14 @@
         (note-id (+ (var-get note-counter) u1))
     )
         (begin
-            ;; Validate inputs
             (try! (validate-title title))
             (try! (validate-content content))
             (try! (validate-tags tags))
             
-            ;; Increment note counter
+            
             (var-set note-counter note-id)
             
-            ;; Store note
+            
             (map-set notes note-id {
                 owner: caller,
                 title: title,
@@ -118,10 +114,10 @@
                 is-encrypted: is-encrypted
             })
             
-            ;; Track user's note
+            
             (map-set user-notes (caller, note-id) true)
             
-            ;; Emit event
+            
             (ok (print (NoteCreated note-id caller title)))
         )
     )
@@ -158,13 +154,12 @@
         (current-time (unwrap! (get-block-info? time u0) u0))
     )
         (begin
-            ;; Check authorization
             (try! (is-note-owner note-id))
             
-            ;; Validate content
+            
             (try! (validate-content new-content))
             
-            ;; Update note
+            
             (map-set notes note-id {
                 owner: (get owner note),
                 title: (get title note),
@@ -175,7 +170,7 @@
                 is-encrypted: (get is-encrypted note)
             })
             
-            ;; Emit event
+            
             (ok (print (NoteUpdated note-id caller (get title note))))
         )
     )
@@ -192,13 +187,12 @@
         (current-time (unwrap! (get-block-info? time u0) u0))
     )
         (begin
-            ;; Check authorization
             (try! (is-note-owner note-id))
             
-            ;; Validate title
+            
             (try! (validate-title new-title))
             
-            ;; Update note
+            
             (map-set notes note-id {
                 owner: (get owner note),
                 title: new-title,
@@ -209,7 +203,7 @@
                 is-encrypted: (get is-encrypted note)
             })
             
-            ;; Emit event
+            
             (ok (print (NoteUpdated note-id caller new-title)))
         )
     )
@@ -227,17 +221,16 @@
         (current-time (unwrap! (get-block-info? time u0) u0))
     )
         (begin
-            ;; Check authorization
             (try! (is-note-owner note-id))
             
-            ;; Validate tag length
+            
             (asserts! (<= (len tag) MAX-TAG-LENGTH) ERR-INVALID-INPUT)
             (asserts! (> (len tag) u0) ERR-INVALID-INPUT)
             
-            ;; Check tag limit
+            
             (asserts! (< (len current-tags) MAX-TAGS) ERR-TAG-LIMIT-EXCEEDED)
             
-            ;; Add tag if not already present
+            
             (let ((new-tags (append current-tags (list tag))))
                 (begin
                     (map-set notes note-id {
@@ -250,7 +243,7 @@
                         is-encrypted: (get is-encrypted note)
                     })
                     
-                    ;; Emit event
+                    
                     (ok (print (TagAdded note-id tag)))
                 )
             )
@@ -269,13 +262,12 @@
         (current-time (unwrap! (get-block-info? time u0) u0))
     )
         (begin
-            ;; Check authorization
             (try! (is-note-owner note-id))
             
-            ;; Validate tags
+            
             (try! (validate-tags new-tags))
             
-            ;; Update note
+            
             (map-set notes note-id {
                 owner: (get owner note),
                 title: (get title note),
@@ -286,7 +278,7 @@
                 is-encrypted: (get is-encrypted note)
             })
             
-            ;; Emit event
+            
             (ok (print (NoteUpdated note-id caller (get title note))))
         )
     )
@@ -299,16 +291,15 @@
         (note (unwrap! (map-get? notes note-id) ERR-NOTE-NOT-FOUND))
     )
         (begin
-            ;; Check authorization
             (try! (is-note-owner note-id))
             
-            ;; Delete note from map
+            
             (map-delete notes note-id)
             
-            ;; Remove from user notes tracking
+            
             (map-delete user-notes (caller, note-id))
             
-            ;; Emit event
+            
             (ok (print (NoteDeleted note-id caller)))
         )
     )
@@ -333,4 +324,3 @@
 (define-read-only (get-user-note-count (user principal))
     (ok (var-get note-counter))
 )
-
